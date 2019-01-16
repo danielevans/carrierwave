@@ -189,6 +189,25 @@ describe CarrierWave::MiniMagick do
       expect(instance.width).to eq(200)
       expect(instance.height).to eq(300)
     end
+    context "when the filename has a space in it and the url method is enabled" do
+      before do
+        FileUtils.mv(file_path('landscape_copy.jpg'), file_path('landscape copy.jpg'))
+        allow(@instance).to receive(:cached?).and_return true
+        allow(@instance).to receive(:url).and_call_original
+        allow(@instance).to receive(:file).and_return(CarrierWave::SanitizedFile.new(file_path('landscape copy.jpg')))
+      end
+
+      after do
+        FileUtils.rm(file_path('landscape copy.jpg')) if File.exist?(file_path('landscape copy.jpg'))
+      end
+
+      it "should return the width and height of the image" do
+        @instance.resize_to_fill(200, 300)
+        expect(@instance.width).to eq(200)
+        expect(@instance.height).to eq(300)
+      end
+    end
+
   end
 
   describe '#dimension_from' do
